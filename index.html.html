@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopVoucer - Belanja dengan Voucher Menarik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .btn-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-hover:hover {
+            transform: scale(1.05);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .voucher-badge {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .sold-out {
+            position: relative;
+        }
+        
+        .sold-out::after {
+            content: 'HABIS';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 5px 40px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .admin-badge {
+            background: linear-gradient(45deg, #fbbf24 0%, #f59e0b 100%);
+        }
+        
+        .cart-item-enter {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .bounce {
+            animation: bounce 0.5s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .profile-img-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #e5e7eb;
+        }
+        
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .profile-container:hover .upload-overlay {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Landing Page / Login Section -->
+    <div id="landingPage" class="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 max-w-md w-full fade-in">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mb-4">
+                    <i class="fas fa-shopping-bag text-white text-3xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">ShopVoucer</h1>
+                <p class="text-gray-600">Belanja hemat dengan voucher eksklusif</p>
+            </div>
+            
+            <div id="loginForm">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Masuk ke Akun Anda</h2>
+                <form onsubmit="handleLogin(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Email</label>
+                        <input type="email" id="loginEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="email@example.com atau admin@shopvoucer.com">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                        <input type="password" id="loginPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 rounded-lg btn-hover">
+                        Masuk
+                    </button>
+                </form>
+                <p class="text-center mt-4 text-gray-600">
+                    Belum punya akun? 
+                    <button onclick="showRegister()" class="text-purple-600 font-medium hover:underline">Daftar sekarang</button>
+                </p>
+                <div class="mt-4 p-3 bg-yellow-50 rounded-lg">
+                    <p class="text-xs text-yellow-800">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Admin: admin@shopvoucer.com / admin123
+                    </p>
+                </div>
+            </div>
+            
+            <div id="registerForm" class="hidden">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Daftar Akun Baru</h2>
+                <form onsubmit="handleRegister(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Nama Lengkap</label>
+                        <input type="text" id="registerName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="John Doe">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Email</label>
+                        <input type="email" id="registerEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="email@example.com">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                        <input type="password" id="registerPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="••••••••">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Kode Referral (Opsional)</label>
+                        <input type="text" id="referralCode" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Masukkan kode referral">
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 rounded-lg btn-hover">
+                        Daftar
+                    </button>
+                </form>
+                <p class="text-center mt-4 text-gray-600">
+                    Sudah punya akun? 
+                    <button onclick="showLogin()" class="text-purple-600 font-medium hover:underline">Masuk</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+        <!-- Header -->
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-shopping-bag text-white"></i>
+                        </div>
+                        <h1 class="text-2xl font-bold text-gray-800">ShopVoucer</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Cart Button -->
+                        <div class="relative">
+                            <button onclick="toggleCart()" class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-lg btn-hover flex items-center space-x-2">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Keranjang</span>
+                                <span id="cartCount" class="bg-white text-green-600 rounded-full px-2 py-1 text-xs font-bold">0</span>
+                            </button>
+                        </div>
+                        <!-- Voucher Button -->
+                        <div class="relative">
+                            <button onclick="toggleVoucherPanel()" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg btn-hover flex items-center space-x-2">
+                                <i class="fas fa-ticket-alt"></i>
+                                <span>Voucher</span>
+                                <span id="voucherCount" class="bg-white text-purple-600 rounded-full px-2 py-1 text-xs font-bold">0</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-2 cursor-pointer" onclick="showProfileModal()">
+                            <img id="headerProfileImg" src="https://picsum.photos/seed/default/100/100.jpg" alt="Profile" class="profile-img">
+                            <div class="text-left">
+                                <span id="userName" class="font-medium text-gray-700 block"></span>
+                                ${isAdmin ? '<span class="text-xs text-yellow-600 font-semibold">ADMIN</span>' : ''}
+                            </div>
+                        </div>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Cart Panel -->
+        <div id="cartPanel" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Keranjang Belanja</h3>
+                    <button onclick="toggleCart()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div id="cartItems" class="space-y-4 mb-6">
+                    <!-- Cart items will be displayed here -->
+                </div>
+                
+                <div id="emptyCart" class="hidden text-center py-8">
+                    <i class="fas fa-shopping-cart text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500">Keranjang belanja kosong</p>
+                </div>
+                
+                <div id="cartSummary" class="hidden border-t pt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-600">Subtotal</span>
+                        <span id="subtotal" class="font-semibold">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-600">Diskon Voucher</span>
+                        <span id="discount" class="font-semibold text-green-600">- Rp 0</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-lg font-bold">Total</span>
+                        <span id="total" class="text-xl font-bold text-purple-600">Rp 0</span>
+                    </div>
+                    <button onclick="checkout()" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-3 rounded-lg btn-hover">
+                        <i class="fas fa-whatsapp mr-2"></i>Checkout via WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voucher Panel -->
+        <div id="voucherPanel" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full max-h-96 overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Voucher Saya</h3>
+                    <button onclick="toggleVoucherPanel()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="voucherList" class="space-y-3">
+                    <!-- Vouchers will be displayed here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Modal -->
+        <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Profil Saya</h3>
+                    <button onclick="hideProfileModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <div class="profile-container inline-block relative">
+                        <img id="modalProfileImg" src="https://picsum.photos/seed/default/100/100.jpg" alt="Profile" class="profile-img-large">
+                        <div class="upload-overlay" onclick="document.getElementById('profileImageInput').click()">
+                            <i class="fas fa-camera text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <input type="file" id="profileImageInput" accept="image/*" style="display: none;" onchange="changeProfileImage(event)">
+                    <p class="text-sm text-gray-600 mt-2">Klik gambar untuk mengubah foto</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Nama Lengkap</label>
+                        <input type="text" id="profileName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Email</label>
+                        <input type="email" id="profileEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Kode Referral</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="profileReferral" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" readonly>
+                            <button onclick="copyReferralCode()" class="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">Total Referral</label>
+                        <input type="text" id="profileTotalReferral" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Quick Actions (only for admin) -->
+        <div id="adminQuickActions" class="hidden bg-yellow-50 border-b border-yellow-200">
+            <div class="container mx-auto px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-crown text-yellow-600"></i>
+                        <span class="text-yellow-800 font-medium">Mode Admin</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="showAdminPanel()" class="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700">
+                            <i class="fas fa-cog mr-1"></i>Admin Panel
+                        </button>
+                        <button onclick="exitAdminMode()" class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">
+                            <i class="fas fa-times mr-1"></i>Keluar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <main class="container mx-auto px-4 py-8">
+            <div class="mb-8 text-center">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Produk Pilihan</h2>
+                <p class="text-gray-600">Temukan produk terbaik dengan harga terjangkau</p>
+            </div>
+
+            <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Products will be displayed here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden">
+        <header class="bg-gray-900 text-white shadow-md">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-crown text-white"></i>
+                        </div>
+                        <h1 class="text-2xl font-bold">Admin Panel</h1>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="backToUserMode()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm">
+                            <i class="fas fa-arrow-left mr-2"></i>Mode User
+                        </button>
+                        <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-8">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Total User</p>
+                            <p id="totalUsers" class="text-2xl font-bold text-gray-800">0</p>
+                        </div>
+                        <i class="fas fa-users text-3xl text-purple-500"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Total Produk</p>
+                            <p id="totalProducts" class="text-2xl font-bold text-gray-800">0</p>
+                        </div>
+                        <i class="fas fa-box text-3xl text-pink-500"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Voucher Diberikan</p>
+                            <p id="totalVouchers" class="text-2xl font-bold text-gray-800">0</p>
+                        </div>
+                        <i class="fas fa-ticket-alt text-3xl text-green-500"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">Referral Aktif</p>
+                            <p id="totalReferrals" class="text-2xl font-bold text-gray-800">0</p>
+                        </div>
+                        <i class="fas fa-link text-3xl text-blue-500"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="bg-white rounded-xl shadow-md">
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 px-6">
+                        <button onclick="showTab('products')" class="tab-btn py-4 px-2 border-b-2 border-purple-500 text-purple-600 font-medium" data-tab="products">
+                            Kelola Produk
+                        </button>
+                        <button onclick="showTab('users')" class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-600 hover:text-gray-800 font-medium" data-tab="users">
+                            Daftar User
+                        </button>
+                        <button onclick="showTab('vouchers')" class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-600 hover:text-gray-800 font-medium" data-tab="vouchers">
+                            Beri Voucher
+                        </button>
+                        <button onclick="showTab('referrals')" class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-600 hover:text-gray-800 font-medium" data-tab="referrals">
+                            Referral
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Products Tab -->
+                <div id="productsTab" class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Kelola Produk</h3>
+                        <button onclick="showAddProductForm()" class="bg-purple-600 text-white px-4 py-2 rounded-lg btn-hover">
+                            <i class="fas fa-plus mr-2"></i>Tambah Produk
+                        </button>
+                    </div>
+                    <div id="productsList" class="space-y-4">
+                        <!-- Products list will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="usersTab" class="p-6 hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Daftar User</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Foto</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Referral</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Referral</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Users will be displayed here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Vouchers Tab -->
+                <div id="vouchersTab" class="p-6 hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Berikan Voucher ke User</h3>
+                    <form onsubmit="giveVoucher(event)" class="max-w-md">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2">Pilih User</label>
+                            <select id="voucherUser" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="">Pilih user...</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2">Kode Voucher</label>
+                            <input type="text" id="voucherCode" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="VOUCHER123">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2">Diskon (%)</label>
+                            <input type="number" id="voucherDiscount" required min="1" max="100" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="10">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-medium mb-2">Keterangan</label>
+                            <input type="text" id="voucherDesc" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Diskon 10% untuk pembelian pertama">
+                        </div>
+                        <button type="submit" class="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg btn-hover">
+                            Berikan Voucher
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Referrals Tab -->
+                <div id="referralsTab" class="p-6 hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Data Referral</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Referrer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Referred</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="referralsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Referrals will be displayed here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Tambah Produk</h3>
+                <button onclick="hideAddProductForm()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="addProduct(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Nama Produk</label>
+                    <input type="text" id="productName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Nama produk">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Harga</label>
+                    <input type="number" id="productPrice" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="100000">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Stok</label>
+                    <input type="number" id="productStock" required min="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="10">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">URL Gambar</label>
+                    <input type="url" id="productImage" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="https://example.com/image.jpg">
+                    <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan gambar default</p>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Deskripsi</label>
+                    <textarea id="productDesc" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Deskripsi produk"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg btn-hover">
+                    Tambah Produk
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editProductModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Edit Produk</h3>
+                <button onclick="hideEditProductForm()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="updateProduct(event)">
+                <input type="hidden" id="editProductId">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Nama Produk</label>
+                    <input type="text" id="editProductName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Harga</label>
+                    <input type="number" id="editProductPrice" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Stok</label>
+                    <input type="number" id="editProductStock" required min="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">URL Gambar</label>
+                    <input type="url" id="editProductImage" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan gambar default</p>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Deskripsi</label>
+                    <textarea id="editProductDesc" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg btn-hover">
+                    Update Produk
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Stock Modal -->
+    <div id="addStockModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Tambah Stok Produk</h3>
+                <button onclick="hideAddStockForm()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="addStock(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Produk</label>
+                    <select id="stockProduct" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Pilih produk...</option>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Jumlah Stok yang Ditambahkan</label>
+                    <input type="number" id="stockAmount" required min="1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="10">
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white font-semibold py-3 rounded-lg btn-hover">
+                    Tambah Stok
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let products = JSON.parse(localStorage.getItem('products')) || [
+            { id: 1, name: 'Laptop Gaming', price: 15000000, stock: 5, description: 'Laptop gaming dengan spesifikasi tinggi', image: 'https://picsum.photos/seed/laptop/300/300.jpg' },
+            { id: 2, name: 'Smartphone Premium', price: 8000000, stock: 10, description: 'Smartphone dengan kamera terbaik', image: 'https://picsum.photos/seed/phone/300/300.jpg' },
+            { id: 3, name: 'Headphone Wireless', price: 1500000, stock: 0, description: 'Headphone dengan noise cancelling', image: 'https://picsum.photos/seed/headphone/300/300.jpg' },
+            { id: 4, name: 'Smartwatch', price: 2500000, stock: 8, description: 'Smartwatch dengan fitur lengkap', image: 'https://picsum.photos/seed/watch/300/300.jpg' }
+        ];
+        let referrals = JSON.parse(localStorage.getItem('referrals')) || [];
+        let currentUser = null;
+        let isAdmin = false;
+        let cart = [];
+        let userProfiles = JSON.parse(localStorage.getItem('userProfiles')) || {};
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('products', JSON.stringify(products));
+            localStorage.setItem('referrals', JSON.stringify(referrals));
+            localStorage.setItem('userProfiles', JSON.stringify(userProfiles));
+        }
+
+        // Form switching functions
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+
+        // Handle registration
+        function handleRegister(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const referralCode = document.getElementById('referralCode').value;
+            
+            // Check if email already exists
+            if (users.find(u => u.email === email)) {
+                showNotification('Email sudah terdaftar!', 'error');
+                return;
+            }
+            
+            // Generate referral code
+            const newReferralCode = 'REF' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            
+            // Create new user
+            const newUser = {
+                id: Date.now(),
+                name,
+                email,
+                password,
+                referralCode: newReferralCode,
+                vouchers: [],
+                totalReferrals: 0
+            };
+            
+            // Add referral if code provided
+            if (referralCode) {
+                const referrer = users.find(u => u.referralCode === referralCode);
+                if (referrer) {
+                    referrer.totalReferrals++;
+                    referrals.push({
+                        referrerId: referrer.id,
+                        referredId: newUser.id,
+                        date: new Date().toISOString()
+                    });
+                    
+                    // Give voucher to referrer
+                    referrer.vouchers.push({
+                        code: 'REFBONUS' + Math.random().toString(36).substr(2, 6),
+                        discount: 15,
+                        description: 'Bonus referral 15%',
+                        used: false
+                    });
+                }
+            }
+            
+            // Give welcome voucher
+            newUser.vouchers.push({
+                code: 'WELCOME' + Math.random().toString(36).substr(2, 6),
+                discount: 10,
+                description: 'Voucher selamat datang 10%',
+                used: false
+            });
+            
+            users.push(newUser);
+            saveData();
+            
+            showNotification('Registrasi berhasil! Silakan login.', 'success');
+            showLogin();
+        }
+
+        // Handle login (combined for user and admin)
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Check for admin login
+            if (email === 'admin@shopvoucer.com' && password === 'admin123') {
+                currentUser = { name: 'Admin', email: 'admin@shopvoucer.com' };
+                isAdmin = true;
+                showAdminPanel();
+                return;
+            }
+            
+            // Check for user login
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                isAdmin = false;
+                showMainApp();
+            } else {
+                showNotification('Email atau password salah!', 'error');
+            }
+        }
+
+        // Show main app
+        function showMainApp() {
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('adminQuickActions').classList.add('hidden');
+            updateVoucherCount();
+            updateCartCount();
+            updateProfileImage();
+            displayProducts();
+        }
+
+        // Show admin panel
+        function showAdminPanel() {
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            
+            updateAdminStats();
+            showTab('products');
+        }
+
+        // Back to user mode from admin panel
+        function backToUserMode() {
+            if (currentUser && currentUser.email === 'admin@shopvoucer.com') {
+                // Admin doesn't have user mode, stay in admin panel
+                return;
+            }
+            showMainApp();
+        }
+
+        // Exit admin mode
+        function exitAdminMode() {
+            if (currentUser && currentUser.email !== 'admin@shopvoucer.com') {
+                showMainApp();
+            }
+        }
+
+        // Logout
+        function logout() {
+            currentUser = null;
+            isAdmin = false;
+            cart = [];
+            document.getElementById('landingPage').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            
+            // Clear form
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('registerName').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('referralCode').value = '';
+        }
+
+        // Update profile image
+        function updateProfileImage() {
+            const profileImg = userProfiles[currentUser.email]?.profileImage || 'https://picsum.photos/seed/default/100/100.jpg';
+            document.getElementById('headerProfileImg').src = profileImg;
+            document.getElementById('modalProfileImg').src = profileImg;
+        }
+
+        // Show profile modal
+        function showProfileModal() {
+            document.getElementById('profileModal').classList.remove('hidden');
+            
+            // Fill profile data
+            document.getElementById('profileName').value = currentUser.name;
+            document.getElementById('profileEmail').value = currentUser.email;
+            document.getElementById('profileReferral').value = currentUser.referralCode || '-';
+            document.getElementById('profileTotalReferral').value = currentUser.totalReferrals || 0;
+            
+            updateProfileImage();
+        }
+
+        // Hide profile modal
+        function hideProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        // Change profile image
+        function changeProfileImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    
+                    // Save to user profiles
+                    if (!userProfiles[currentUser.email]) {
+                        userProfiles[currentUser.email] = {};
+                    }
+                    userProfiles[currentUser.email].profileImage = imageUrl;
+                    saveData();
+                    
+                    // Update UI
+                    updateProfileImage();
+                    showNotification('Foto profil berhasil diperbarui!', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Copy referral code
+        function copyReferralCode() {
+            const referralCode = document.getElementById('profileReferral').value;
+            if (referralCode && referralCode !== '-') {
+                navigator.clipboard.writeText(referralCode).then(() => {
+                    showNotification('Kode referral disalin!', 'success');
+                });
+            }
+        }
+
+        // Display products
+        function displayProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = `bg-white rounded-xl shadow-md overflow-hidden card-hover ${product.stock === 0 ? 'sold-out opacity-75' : ''}`;
+                
+                productCard.innerHTML = `
+                    <div class="relative">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover">
+                        ${product.stock === 0 ? '<div class="absolute inset-0 bg-gray-900 bg-opacity-50"></div>' : ''}
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${product.name}</h3>
+                        <p class="text-gray-600 text-sm mb-4">${product.description}</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-2xl font-bold text-purple-600">Rp ${product.price.toLocaleString('id-ID')}</span>
+                            <span class="text-sm text-gray-500">Stok: ${product.stock}</span>
+                        </div>
+                        <div class="space-y-2">
+                            <button onclick="addToCart(${product.id})" ${product.stock === 0 ? 'disabled' : ''} 
+                                    class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-2 rounded-lg btn-hover ${product.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''}">
+                                <i class="fas fa-cart-plus mr-2"></i>${product.stock === 0 ? 'Habis' : 'Tambah ke Keranjang'}
+                            </button>
+                            <button onclick="buyProduct(${product.id})" ${product.stock === 0 ? 'disabled' : ''} 
+                                    class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-2 rounded-lg btn-hover ${product.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''}">
+                                ${product.stock === 0 ? 'Habis' : 'Beli Langsung'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                grid.appendChild(productCard);
+            });
+        }
+
+        // Add to cart
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product || product.stock === 0) return;
+            
+            // Check if product already in cart
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                if (existingItem.quantity < product.stock) {
+                    existingItem.quantity++;
+                    showNotification('Jumlah produk ditambahkan!', 'success');
+                } else {
+                    showNotification('Stok tidak mencukupi!', 'error');
+                    return;
+                }
+            } else {
+                cart.push({
+                    ...product,
+                    quantity: 1
+                });
+                showNotification('Produk ditambahkan ke keranjang!', 'success');
+            }
+            
+            updateCartCount();
+            
+            // Add bounce animation to cart button
+            const cartButton = document.querySelector('#cartCount').parentElement.parentElement;
+            cartButton.classList.add('bounce');
+            setTimeout(() => cartButton.classList.remove('bounce'), 500);
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = totalItems;
+        }
+
+        // Toggle cart panel
+        function toggleCart() {
+            const panel = document.getElementById('cartPanel');
+            panel.classList.toggle('hidden');
+            
+            if (!panel.classList.contains('hidden')) {
+                displayCart();
+            }
+        }
+
+        // Display cart
+        function displayCart() {
+            const cartItems = document.getElementById('cartItems');
+            const emptyCart = document.getElementById('emptyCart');
+            const cartSummary = document.getElementById('cartSummary');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '';
+                emptyCart.classList.remove('hidden');
+                cartSummary.classList.add('hidden');
+                return;
+            }
+            
+            emptyCart.classList.add('hidden');
+            cartSummary.classList.remove('hidden');
+            
+            cartItems.innerHTML = '';
+            let subtotal = 0;
+            
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                const cartItem = document.createElement('div');
+                cartItem.className = 'flex items-center space-x-4 p-4 bg-gray-50 rounded-lg cart-item-enter';
+                
+                cartItem.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-cover rounded-lg">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-800">${item.name}</h4>
+                        <p class="text-sm text-gray-600">Rp ${item.price.toLocaleString('id-ID')} x ${item.quantity}</p>
+                        <p class="text-lg font-bold text-purple-600">Rp ${itemTotal.toLocaleString('id-ID')}</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="updateCartQuantity(${index}, ${item.quantity - 1})" 
+                                class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 ${item.quantity <= 1 ? 'opacity-50 cursor-not-allowed' : ''}"
+                                ${item.quantity <= 1 ? 'disabled' : ''}>
+                            <i class="fas fa-minus text-xs"></i>
+                        </button>
+                        <span class="w-8 text-center font-semibold">${item.quantity}</span>
+                        <button onclick="updateCartQuantity(${index}, ${item.quantity + 1})" 
+                                class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 ${item.quantity >= item.stock ? 'opacity-50 cursor-not-allowed' : ''}"
+                                ${item.quantity >= item.stock ? 'disabled' : ''}>
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                        <button onclick="removeFromCart(${index})" class="text-red-600 hover:text-red-800 ml-2">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                cartItems.appendChild(cartItem);
+            });
+            
+            // Calculate totals with voucher
+            const availableVouchers = currentUser.vouchers.filter(v => !v.used);
+            let bestVoucher = null;
+            let discount = 0;
+            
+            if (availableVouchers.length > 0) {
+                bestVoucher = availableVouchers.reduce((best, current) => 
+                    current.discount > best.discount ? current : best
+                );
+                discount = subtotal * (bestVoucher.discount / 100);
+            }
+            
+            const total = subtotal - discount;
+            
+            // Update summary
+            document.getElementById('subtotal').textContent = `Rp ${subtotal.toLocaleString('id-ID')}`;
+            document.getElementById('discount').textContent = `- Rp ${discount.toLocaleString('id-ID')}`;
+            document.getElementById('total').textContent = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        // Update cart quantity
+        function updateCartQuantity(index, newQuantity) {
+            if (newQuantity < 1) return;
+            
+            const item = cart[index];
+            if (newQuantity > item.stock) {
+                showNotification('Stok tidak mencukupi!', 'error');
+                return;
+            }
+            
+            cart[index].quantity = newQuantity;
+            displayCart();
+            updateCartCount();
+        }
+
+        // Remove from cart
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            displayCart();
+            updateCartCount();
+            showNotification('Produk dihapus dari keranjang', 'info');
+        }
+
+        // Checkout
+        function checkout() {
+            if (cart.length === 0) return;
+            
+            // Calculate totals
+            let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Apply best voucher
+            const availableVouchers = currentUser.vouchers.filter(v => !v.used);
+            let appliedVoucher = null;
+            let discount = 0;
+            
+            if (availableVouchers.length > 0) {
+                appliedVoucher = availableVouchers.reduce((best, current) => 
+                    current.discount > best.discount ? current : best
+                );
+                discount = subtotal * (appliedVoucher.discount / 100);
+                appliedVoucher.used = true;
+                saveData();
+                updateVoucherCount();
+            }
+            
+            const total = subtotal - discount;
+            
+            // Create WhatsApp message
+            let message = `Halo, saya ingin membeli:\n\n`;
+            
+            cart.forEach(item => {
+                message += `${item.name}\n`;
+                message += `Harga: Rp ${item.price.toLocaleString('id-ID')} x ${item.quantity} = Rp ${(item.price * item.quantity).toLocaleString('id-ID')}\n\n`;
+            });
+            
+            message += `Subtotal: Rp ${subtotal.toLocaleString('id-ID')}\n`;
+            if (appliedVoucher) {
+                message += `Diskon: ${appliedVoucher.discount}% (Voucher: ${appliedVoucher.code}) = -Rp ${discount.toLocaleString('id-ID')}\n`;
+            }
+            message += `Total: Rp ${total.toLocaleString('id-ID')}\n\n`;
+            message += `Nama: ${currentUser.name}\n`;
+            message += `Email: ${currentUser.email}`;
+            
+            // Open WhatsApp
+            const whatsappUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            
+            // Update stock and clear cart
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    product.stock -= item.quantity;
+                }
+            });
+            
+            saveData();
+            cart = [];
+            updateCartCount();
+            displayProducts();
+            
+            showNotification(
+                appliedVoucher 
+                    ? `Voucher ${appliedVoucher.discount}% telah digunakan! Menghubungkan ke WhatsApp...`
+                    : 'Menghubungkan ke WhatsApp...',
+                'success'
+            );
+            
+            // Close cart panel
+            toggleCart();
+        }
+
+        // Buy product directly
+        function buyProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product || product.stock === 0) return;
+            
+            // Check for available vouchers
+            const availableVouchers = currentUser.vouchers.filter(v => !v.used);
+            
+            let finalPrice = product.price;
+            let appliedVoucher = null;
+            
+            if (availableVouchers.length > 0) {
+                // Apply best voucher
+                appliedVoucher = availableVouchers.reduce((best, current) => 
+                    current.discount > best.discount ? current : best
+                );
+                finalPrice = product.price - (product.price * appliedVoucher.discount / 100);
+                appliedVoucher.used = true;
+                saveData();
+                updateVoucherCount();
+            }
+            
+            // Create WhatsApp message
+            const message = `Halo, saya ingin membeli:\n\n` +
+                           `Produk: ${product.name}\n` +
+                           `Harga: Rp ${product.price.toLocaleString('id-ID')}\n` +
+                           `${appliedVoucher ? `Diskon: ${appliedVoucher.discount}% (Voucher: ${appliedVoucher.code})\n` : ''}` +
+                           `Total: Rp ${finalPrice.toLocaleString('id-ID')}\n\n` +
+                           `Nama: ${currentUser.name}\n` +
+                           `Email: ${currentUser.email}`;
+            
+            // Open WhatsApp
+            const whatsappUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            
+            // Update stock
+            product.stock--;
+            saveData();
+            displayProducts();
+            
+            showNotification(
+                appliedVoucher 
+                    ? `Voucher ${appliedVoucher.discount}% telah digunakan! Menghubungkan ke WhatsApp...`
+                    : 'Menghubungkan ke WhatsApp...',
+                'success'
+            );
+        }
+
+        // Toggle voucher panel
+        function toggleVoucherPanel() {
+            const panel = document.getElementById('voucherPanel');
+            panel.classList.toggle('hidden');
+            
+            if (!panel.classList.contains('hidden')) {
+                displayVouchers();
+            }
+        }
+
+        // Display vouchers
+        function displayVouchers() {
+            const list = document.getElementById('voucherList');
+            list.innerHTML = '';
+            
+            if (currentUser.vouchers.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center">Belum ada voucher</p>';
+                return;
+            }
+            
+            currentUser.vouchers.forEach(voucher => {
+                const voucherCard = document.createElement('div');
+                voucherCard.className = `bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-4 ${voucher.used ? 'opacity-50' : ''}`;
+                
+                voucherCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${voucher.code}</h4>
+                            <p class="text-sm text-gray-600">${voucher.description}</p>
+                            <p class="text-lg font-bold text-purple-600 mt-1">${voucher.discount}% OFF</p>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full ${voucher.used ? 'bg-gray-300 text-gray-600' : 'bg-green-100 text-green-600'}">
+                            ${voucher.used ? 'Digunakan' : 'Tersedia'}
+                        </span>
+                    </div>
+                `;
+                
+                list.appendChild(voucherCard);
+            });
+        }
+
+        // Update voucher count
+        function updateVoucherCount() {
+            const availableVouchers = currentUser.vouchers.filter(v => !v.used).length;
+            document.getElementById('voucherCount').textContent = availableVouchers;
+        }
+
+        // Admin panel functions
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('[id$="Tab"]').forEach(tab => tab.classList.add('hidden'));
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if (btn.dataset.tab === tabName) {
+                    btn.classList.add('border-purple-500', 'text-purple-600');
+                    btn.classList.remove('border-transparent', 'text-gray-600');
+                } else {
+                    btn.classList.remove('border-purple-500', 'text-purple-600');
+                    btn.classList.add('border-transparent', 'text-gray-600');
+                }
+            });
+            
+            // Load tab content
+            if (tabName === 'products') {
+                displayProductsList();
+            } else if (tabName === 'users') {
+                displayUsersTable();
+            } else if (tabName === 'vouchers') {
+                populateVoucherUserSelect();
+            } else if (tabName === 'referrals') {
+                displayReferralsTable();
+            }
+        }
+
+        // Update admin stats
+        function updateAdminStats() {
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('totalProducts').textContent = products.length;
+            
+            const totalVouchersGiven = users.reduce((sum, user) => sum + user.vouchers.length, 0);
+            document.getElementById('totalVouchers').textContent = totalVouchersGiven;
+            
+            document.getElementById('totalReferrals').textContent = referrals.length;
+        }
+
+        // Display products list in admin
+        function displayProductsList() {
+            const list = document.getElementById('productsList');
+            list.innerHTML = '';
+            
+            products.forEach(product => {
+                const productItem = document.createElement('div');
+                productItem.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+                
+                productItem.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <img src="${product.image}" alt="${product.name}" class="w-16 h-16 object-cover rounded-lg">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${product.name}</h4>
+                            <p class="text-sm text-gray-600">${product.description}</p>
+                            <p class="text-lg font-bold text-purple-600">Rp ${product.price.toLocaleString('id-ID')}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-center">
+                            <label class="text-sm text-gray-600">Stok</label>
+                            <input type="number" value="${product.stock}" min="0" 
+                                   onchange="updateProductStock(${product.id}, this.value)"
+                                   class="w-20 px-2 py-1 border border-gray-300 rounded text-center">
+                        </div>
+                        <button onclick="showEditProductForm(${product.id})" 
+                                class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                            <i class="fas fa-edit mr-1"></i> Edit
+                        </button>
+                        <button onclick="showAddStockForm(${product.id})" 
+                                class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                            <i class="fas fa-plus"></i> Tambah
+                        </button>
+                        <button onclick="deleteProduct(${product.id})" 
+                                class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                list.appendChild(productItem);
+            });
+        }
+
+        // Show edit product form
+        function showEditProductForm(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editProductName').value = product.name;
+            document.getElementById('editProductPrice').value = product.price;
+            document.getElementById('editProductStock').value = product.stock;
+            document.getElementById('editProductImage').value = product.image;
+            document.getElementById('editProductDesc').value = product.description;
+            
+            document.getElementById('editProductModal').classList.remove('hidden');
+        }
+
+        // Hide edit product form
+        function hideEditProductForm() {
+            document.getElementById('editProductModal').classList.add('hidden');
+        }
+
+        // Update product
+        function updateProduct(event) {
+            event.preventDefault();
+            
+            const productId = parseInt(document.getElementById('editProductId').value);
+            const name = document.getElementById('editProductName').value;
+            const price = parseInt(document.getElementById('editProductPrice').value);
+            const stock = parseInt(document.getElementById('editProductStock').value);
+            const image = document.getElementById('editProductImage').value;
+            const description = document.getElementById('editProductDesc').value;
+            
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                product.name = name;
+                product.price = price;
+                product.stock = stock;
+                product.description = description;
+                
+                // Update image only if provided
+                if (image && image.trim() !== '') {
+                    product.image = image;
+                }
+                
+                saveData();
+                hideEditProductForm();
+                displayProductsList();
+                showNotification('Produk berhasil diperbarui!', 'success');
+            }
+        }
+
+        // Update product stock
+        function updateProductStock(productId, newStock) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                product.stock = parseInt(newStock);
+                saveData();
+                showNotification('Stok produk diperbarui!', 'success');
+            }
+        }
+
+        // Show add stock form
+        function showAddStockForm(productId = null) {
+            document.getElementById('addStockModal').classList.remove('hidden');
+            
+            // Populate product select
+            const select = document.getElementById('stockProduct');
+            select.innerHTML = '<option value="">Pilih produk...</option>';
+            
+            products.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.textContent = `${product.name} (Stok: ${product.stock})`;
+                if (product.id === productId) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+
+        // Hide add stock form
+        function hideAddStockForm() {
+            document.getElementById('addStockModal').classList.add('hidden');
+            document.getElementById('stockProduct').value = '';
+            document.getElementById('stockAmount').value = '';
+        }
+
+        // Add stock to product
+        function addStock(event) {
+            event.preventDefault();
+            
+            const productId = parseInt(document.getElementById('stockProduct').value);
+            const amount = parseInt(document.getElementById('stockAmount').value);
+            
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                product.stock += amount;
+                saveData();
+                
+                hideAddStockForm();
+                displayProductsList();
+                showNotification(`Berhasil menambah ${amount} stok untuk ${product.name}!`, 'success');
+            }
+        }
+
+        // Delete product
+        function deleteProduct(productId) {
+            if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+                products = products.filter(p => p.id !== productId);
+                saveData();
+                displayProductsList();
+                updateAdminStats();
+                showNotification('Produk dihapus!', 'success');
+            }
+        }
+
+        // Show add product form
+        function showAddProductForm() {
+            document.getElementById('addProductModal').classList.remove('hidden');
+        }
+
+        // Hide add product form
+        function hideAddProductForm() {
+            document.getElementById('addProductModal').classList.add('hidden');
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productStock').value = '';
+            document.getElementById('productImage').value = '';
+            document.getElementById('productDesc').value = '';
+        }
+
+        // Add product
+        function addProduct(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('productName').value;
+            const price = parseInt(document.getElementById('productPrice').value);
+            const stock = parseInt(document.getElementById('productStock').value);
+            const image = document.getElementById('productImage').value;
+            const description = document.getElementById('productDesc').value;
+            
+            const newProduct = {
+                id: Date.now(),
+                name,
+                price,
+                stock,
+                description,
+                image: image && image.trim() !== '' ? image : `https://picsum.photos/seed/${name.toLowerCase().replace(/\s+/g, '')}/300/300.jpg`
+            };
+            
+            products.push(newProduct);
+            saveData();
+            
+            hideAddProductForm();
+            displayProductsList();
+            updateAdminStats();
+            showNotification('Produk berhasil ditambahkan!', 'success');
+        }
+
+        // Display users table
+        function displayUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const profileImage = userProfiles[user.email]?.profileImage || 'https://picsum.photos/seed/default/100/100.jpg';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <img src="${profileImage}" alt="${user.name}" class="w-10 h-10 rounded-full object-cover">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${user.name}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${user.email}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                            ${user.referralCode}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${user.totalReferrals}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="giveQuickVoucher(${user.id})" 
+                                class="text-purple-600 hover:text-purple-900 mr-3">
+                            <i class="fas fa-gift"></i> Beri Voucher
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Populate voucher user select
+        function populateVoucherUserSelect() {
+            const select = document.getElementById('voucherUser');
+            select.innerHTML = '<option value="">Pilih user...</option>';
+            
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = `${user.name} (${user.email})`;
+                select.appendChild(option);
+            });
+        }
+
+        // Give voucher
+        function giveVoucher(event) {
+            event.preventDefault();
+            
+            const userId = parseInt(document.getElementById('voucherUser').value);
+            const code = document.getElementById('voucherCode').value;
+            const discount = parseInt(document.getElementById('voucherDiscount').value);
+            const description = document.getElementById('voucherDesc').value;
+            
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                user.vouchers.push({
+                    code,
+                    discount,
+                    description,
+                    used: false
+                });
+                
+                saveData();
+                updateAdminStats();
+                
+                // Reset form
+                document.getElementById('voucherUser').value = '';
+                document.getElementById('voucherCode').value = '';
+                document.getElementById('voucherDiscount').value = '';
+                document.getElementById('voucherDesc').value = '';
+                
+                showNotification(`Voucher berhasil diberikan ke ${user.name}!`, 'success');
+            }
+        }
+
+        // Give quick voucher from users table
+        function giveQuickVoucher(userId) {
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                const code = 'QUICK' + Math.random().toString(36).substr(2, 6).toUpperCase();
+                user.vouchers.push({
+                    code,
+                    discount: 20,
+                    description: 'Voucher khusus dari admin',
+                    used: false
+                });
+                
+                saveData();
+                updateAdminStats();
+                showNotification(`Voucher 20% berhasil diberikan ke ${user.name}!`, 'success');
+            }
+        }
+
+        // Display referrals table
+        function displayReferralsTable() {
+            const tbody = document.getElementById('referralsTableBody');
+            tbody.innerHTML = '';
+            
+            referrals.forEach(referral => {
+                const referrer = users.find(u => u.id === referral.referrerId);
+                const referred = users.find(u => u.id === referral.referredId);
+                
+                if (referrer && referred) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${referrer.name}</div>
+                            <div class="text-sm text-gray-500">${referrer.email}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${referred.name}</div>
+                            <div class="text-sm text-gray-500">${referred.email}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${new Date(referral.date).toLocaleDateString('id-ID')}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            });
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 fade-in ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'error' ? 'fa-exclamation-circle' :
+                        'fa-info-circle'
+                    }"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if there are no users, create a default admin
+            if (users.length === 0) {
+                users.push({
+                    id: 1,
+                    name: 'Admin User',
+                    email: 'admin@example.com',
+                    password: 'password',
+                    referralCode: 'ADMIN001',
+                    vouchers: [],
+                    totalReferrals: 0
+                });
+                saveData();
+            }
+        });
+    </script>
+</body>
+</html>
